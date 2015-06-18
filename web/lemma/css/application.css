@@ -1,0 +1,7 @@
+#input textarea {
+	height: 300px;
+}
+
+textarea#output {
+	height: 550px;
+}
