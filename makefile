@@ -1,6 +1,6 @@
 CPP = g++
 #The -Ofast might not work with older versions of gcc; in that case, use -O2
-CFLAGS = -lm -pthread -Ofast -march=native -Wall -funroll-loops -Wno-unused-result
+CFLAGS = -lm -pthread -Ofast -march=native -Wall -funroll-loops -Wno-unused-result -std=c++11 -std=gnu++11
 
 all: lemma_tool extract_both extract_not_in_lemma extract_not_in_prim
 

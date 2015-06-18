@@ -1,4 +1,4 @@
-# Vector Lematizer
+# Vector Lemmatizer
 
 This project solves the problem of lemmatization utilizing [word2vec](https://code.google.com/p/word2vec/) tool. It was shown that the word vectors capture many linguistic regularities including morpholical relations.
 
@@ -14,37 +14,54 @@ This project solves the problem of lemmatization utilizing [word2vec](https://co
 Run the `bin/lemma` to see the help:
 
 ```
-WORD2VEC Lematizator 1.0
+Vector Lematizator 1.0 (c) Ladislav Gallay, Ing. Marian Simko, PhD.
+
+Program to lemmatize words based on the trained vector model and reference dictionary.
+This project is part of the bachelor thesis:
+Utilizing Vector Models for Processing Text on the Web @ FIIT STUBA 2015.
 
 Options:
-Parameters for training:
 	-model <file>
-		Use binary data from <file> to build the model. Train the model with word2vec tool.
+		Load the model from binary <file>. Train the model with word2vec tool.
 	-dictionary <file>
-		Use text data from <file> to build the dictionary.
+		Load the reference pairs from the <file>.
 	-print_dictionary
-		Print the dictionary and exit.
+		Print the reference pairs.
 	-print_model
-		Print trained model.
+		Print the trained model.
 	-print_word_analogy_input
 		Print the word-analogy input for each testing.
+	-print_pairs
+		Similiar to print_word_analogy_input but it will print the pairs in the output line. So the output will be '[input words] [pairs] [show results]'.
+		For example: 'autom auto ms7 dubom dub chlapom chlap strojom stroj auto 0,456794 motorka 0,234879 vlaky 0,136789 papierom 0,015964'.
 	-quiet
 		Print results only. No steps or other processing/execution info.
-	-choosing_method <integer> (default: 0)
+	-categories
+		Enable categories processing. Dictionary should contain words in format '<category> <word> <lemma>' and input should be in format '<category> <input>'.
+	-choosing_method <integer> (default: 1)
 		Use <integer> to set the method used for choosing the pairs.
 			0 - Find semantic closest word (using the distance function). If the word is not in dictionary find by the suffix.
 			1 - Find the word in the dictionary only by the longest suffix with the input word.
+	-weighting <integer> (default: 0)
+		Use <integer> to set the method used for weighting the results.
+			0 - Relative prefix length + cosine distance.
+			1 - Jaro-Winkler distance + cosine distance.
+			2 - Levehnstein distance + cosine distance.
+			3 - Cosine distance only.
 	-word_analogy <integer> (default: 40)
 		Use <integer> to set the number of words to be found by word_analogy method
-	-iterations <integer> (default: 20)
+	-iterations <integer> (default: 3)
 		Use <integer> to set the number of iterations for each input word. Can be overwritten by each input
 	-closest_count <integer> (default: 40)
 		Use <integer> to set the number of the closest words to investigate when using the distance method/strategy.
+	-show_outputs <integer> (default: 1)
+		Use <integer> to set the number of first N result words to show in  output. They will be in format 'word weight' separated by spaces.
 	-server
 		By default the app run in console mode but it can run as server app listening on <port>.
 	-port <integer> (default: 40)
 		When running as server the app will listen on this port.
-
+	-threads <integer> (default: 1)
+		Number of threads proocessing the input.
 ```
 
 The easiest way how to start is to run
