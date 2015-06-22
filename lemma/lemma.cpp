@@ -295,6 +295,15 @@ int sockfd;
 int sortAlpha[ALPHA];
 
 /**
+ * Dictionary distance. Holds the index and the distance. Sorted array of this objects
+ * gives the order of most matching reference entries from dictionary. See @dictionaryDistance method.
+ */
+typedef struct DD {
+  int index;
+  float distance;
+};
+
+/**
  * To make the code a bit cleaner some imporant methods were extracted into separate files.
  */
 #include "word-analogy.h"
@@ -482,7 +491,7 @@ wchar_t *dic(int n, int w)
 }
 
 /**
-  * Compare two strings according to slovac diacritic
+  * Compare two strings according to slovak diacritic
   */
 int wcscompare (const wchar_t* s1, const wchar_t* s2) {
   while ((*s1 && *s2) && (*s1 == *s2)) s1++,s2++;
@@ -608,6 +617,55 @@ int loadDictionary(char *filename)
 		}
 	}
 	return 0;
+}
+
+int *dictDistSort {
+
+}
+
+/**
+ * For the input word return the list of closest words (distOrder contains indices to the dictionary array) with their
+ * distances (dictDist). The size of these arrays is the dictionarySize. Every index should be there.
+ *
+ * @param input Input word to order the dictionary by.
+ * @param dictOrder List of indices - the first is the one with highest distance.
+ * @param dictDist Distances for the dictionary entries (descending).
+ */
+void dictionaryDistance(wchar_t *input, DD dictDist[])
+{
+  // a,b - iteration variables
+  // x - index of the input in the vocabulary
+  // c - index of each word in dictionary - index to the vocabulary array
+  long long a, b, c, d, x;
+  float dist, len;
+  float vec[size];
+
+  try {
+    x = (long long)wp.at(wstring(input));
+  } catch (const out_of_range& r) {
+    return;
+  }
+
+  for (a = 0; a < size; ++a) vec[a] = 0;
+  for (a = 0; a < size; ++a) vec[a] += M[a + x * size];
+  len = 0;
+  for (a = 0; a < size; ++a) len += vec[a] * vec[a];
+  len = sqrt(len);
+  for (a = 0; a < size; ++a) vec[a] /= len;
+  for (a = 0; a < dictionarySize; ++a) {
+    dictDist[a].index = a;
+    dictDist[a].distance = 0;
+    try {
+      c = (long long)wp.at(wstring(dict(a, 1)));
+    } catch (const out_of_range& r) {
+      continue;
+    }
+    for (b = 0; b < size; ++b) dictDist[a].distance += vec[a] * M[b + a * size];
+  }
+
+  qsort(dictDist, dictioanrySize, sizeof(dictDist), dictDistSort);
+
+  return;
 }
 
 /**
@@ -775,69 +833,69 @@ int findBestWord(int *inputDictionaryDepth, int *inputDictionaryStart, int *inpu
  */
 void help()
 {
-		sprintf(o(), "Vector Lematizator 1.0 (c) Ladislav Gallay, Ing. Marian Simko, PhD.\n\n");
-		sprintf(o(), "Program to lemmatize words based on the trained vector model and reference dictionary.\n");
-		sprintf(o(), "This project is part of the bachelor thesis:\n");
-		sprintf(o(), "Utilizing Vector Models for Processing Text on the Web @ FIIT STUBA 2015.\n");
-    	sprintf(o(), "\nOptions:\n");
+  sprintf(o(), "Vector Lematizator 1.0 (c) Ladislav Gallay, Ing. Marian Simko, PhD.\n\n");
+  sprintf(o(), "Program to lemmatize words based on the trained vector model and reference dictionary.\n");
+  sprintf(o(), "This project is part of the bachelor thesis:\n");
+  sprintf(o(), "Utilizing Vector Models for Processing Text on the Web @ FIIT STUBA 2015.\n");
+  sprintf(o(), "\nOptions:\n");
 
-    	sprintf(o(), "\t-model <file>\n");
-    	sprintf(o(), "\t\tLoad the model from binary <file>. Train the model with word2vec tool.\n");
+  sprintf(o(), "\t-model <file>\n");
+  sprintf(o(), "\t\tLoad the model from binary <file>. Train the model with word2vec tool.\n");
 
-    	sprintf(o(), "\t-dictionary <file>\n");
-    	sprintf(o(), "\t\tLoad the reference pairs from the <file>.\n");
+  sprintf(o(), "\t-dictionary <file>\n");
+  sprintf(o(), "\t\tLoad the reference pairs from the <file>.\n");
 
-    	sprintf(o(), "\t-print_dictionary\n");
-    	sprintf(o(), "\t\tPrint the reference pairs.\n");
+  sprintf(o(), "\t-print_dictionary\n");
+  sprintf(o(), "\t\tPrint the reference pairs.\n");
 
-    	sprintf(o(), "\t-print_model\n");
-    	sprintf(o(), "\t\tPrint the trained model.\n");
+  sprintf(o(), "\t-print_model\n");
+  sprintf(o(), "\t\tPrint the trained model.\n");
 
-    	sprintf(o(), "\t-print_word_analogy_input\n");
-    	sprintf(o(), "\t\tPrint the word-analogy input for each testing.\n");
+  sprintf(o(), "\t-print_word_analogy_input\n");
+  sprintf(o(), "\t\tPrint the word-analogy input for each testing.\n");
 
-    	sprintf(o(), "\t-print_pairs\n");
-    	sprintf(o(), "\t\tSimiliar to print_word_analogy_input but it will print the pairs in the output line. So the output will be '[input words] [pairs] [show results]'.\n");
-    	sprintf(o(), "\t\tFor example: 'autom auto ms7 dubom dub chlapom chlap strojom stroj auto 0,456794 motorka 0,234879 vlaky 0,136789 papierom 0,015964'.\n");
+  sprintf(o(), "\t-print_pairs\n");
+  sprintf(o(), "\t\tSimiliar to print_word_analogy_input but it will print the pairs in the output line. So the output will be '[input words] [pairs] [show results]'.\n");
+  sprintf(o(), "\t\tFor example: 'autom auto ms7 dubom dub chlapom chlap strojom stroj auto 0,456794 motorka 0,234879 vlaky 0,136789 papierom 0,015964'.\n");
 
-    	sprintf(o(), "\t-quiet\n");
-    	sprintf(o(), "\t\tPrint results only. No steps or other processing/execution info.\n");
+  sprintf(o(), "\t-quiet\n");
+  sprintf(o(), "\t\tPrint results only. No steps or other processing/execution info.\n");
 
-    	sprintf(o(), "\t-categories\n");
-    	sprintf(o(), "\t\tEnable categories processing. Dictionary should contain words in format '<category> <word> <lemma>' and input should be in format '<category> <input>'.\n");
+  sprintf(o(), "\t-categories\n");
+  sprintf(o(), "\t\tEnable categories processing. Dictionary should contain words in format '<category> <word> <lemma>' and input should be in format '<category> <input>'.\n");
 
-    	sprintf(o(), "\t-choosing_method <integer> (default: %d)\n", choosingMethod);
-    	sprintf(o(), "\t\tUse <integer> to set the method used for choosing the pairs.\n");
-    	sprintf(o(), "\t\t\t0 - Find semantic closest word (using the distance function). If the word is not in dictionary find by the suffix.\n");
-    	sprintf(o(), "\t\t\t1 - Find the word in the dictionary only by the longest suffix with the input word.\n");
+  sprintf(o(), "\t-choosing_method <integer> (default: %d)\n", choosingMethod);
+  sprintf(o(), "\t\tUse <integer> to set the method used for choosing the pairs.\n");
+  sprintf(o(), "\t\t\t0 - Find semantic closest word (using the distance function). If the word is not in dictionary find by the suffix.\n");
+  sprintf(o(), "\t\t\t1 - Find the word in the dictionary only by the longest suffix with the input word.\n");
 
-    	sprintf(o(), "\t-weighting <integer> (default: %d)\n", weighting);
-    	sprintf(o(), "\t\tUse <integer> to set the method used for weighting the results.\n");
-    	sprintf(o(), "\t\t\t0 - Relative prefix length + cosine distance.\n");
-    	sprintf(o(), "\t\t\t1 - Jaro-Winkler distance + cosine distance.\n");
-    	sprintf(o(), "\t\t\t2 - Levehnstein distance + cosine distance.\n");
-    	sprintf(o(), "\t\t\t3 - Cosine distance only.\n");
+  sprintf(o(), "\t-weighting <integer> (default: %d)\n", weighting);
+  sprintf(o(), "\t\tUse <integer> to set the method used for weighting the results.\n");
+  sprintf(o(), "\t\t\t0 - Relative prefix length + cosine distance.\n");
+  sprintf(o(), "\t\t\t1 - Jaro-Winkler distance + cosine distance.\n");
+  sprintf(o(), "\t\t\t2 - Levehnstein distance + cosine distance.\n");
+  sprintf(o(), "\t\t\t3 - Cosine distance only.\n");
 
-    	sprintf(o(), "\t-word_analogy <integer> (default: %d)\n", word_analogy_iterations);
-    	sprintf(o(), "\t\tUse <integer> to set the number of words to be found by word_analogy method\n");
+  sprintf(o(), "\t-word_analogy <integer> (default: %d)\n", word_analogy_iterations);
+  sprintf(o(), "\t\tUse <integer> to set the number of words to be found by word_analogy method\n");
 
-    	sprintf(o(), "\t-iterations <integer> (default: %d)\n", match_iterations);
-    	sprintf(o(), "\t\tUse <integer> to set the number of iterations for each input word. Can be overwritten by each input\n");
+  sprintf(o(), "\t-iterations <integer> (default: %d)\n", match_iterations);
+  sprintf(o(), "\t\tUse <integer> to set the number of iterations for each input word. Can be overwritten by each input\n");
 
-    	sprintf(o(), "\t-closest_count <integer> (default: %d)\n", closestCount);
-    	sprintf(o(), "\t\tUse <integer> to set the number of the closest words to investigate when using the distance method/strategy.\n");
+  sprintf(o(), "\t-closest_count <integer> (default: %d)\n", closestCount);
+  sprintf(o(), "\t\tUse <integer> to set the number of the closest words to investigate when using the distance method/strategy.\n");
 
-    	sprintf(o(), "\t-show_outputs <integer> (default: %d)\n", showOutputs);
-    	sprintf(o(), "\t\tUse <integer> to set the number of first N result words to show in  output. They will be in format 'word weight' separated by spaces.\n");
+  sprintf(o(), "\t-show_outputs <integer> (default: %d)\n", showOutputs);
+  sprintf(o(), "\t\tUse <integer> to set the number of first N result words to show in  output. They will be in format 'word weight' separated by spaces.\n");
 
-    	sprintf(o(), "\t-server\n");
-    	sprintf(o(), "\t\tBy default the app run in console mode but it can run as server app listening on <port>.\n");
+  sprintf(o(), "\t-server\n");
+  sprintf(o(), "\t\tBy default the app run in console mode but it can run as server app listening on <port>.\n");
 
-    	sprintf(o(), "\t-port <integer> (default: %d)\n", closestCount);
-    	sprintf(o(), "\t\tWhen running as server the app will listen on this port.\n");
+  sprintf(o(), "\t-port <integer> (default: %d)\n", closestCount);
+  sprintf(o(), "\t\tWhen running as server the app will listen on this port.\n");
 
-    	sprintf(o(), "\t-threads <integer> (default: %d)\n", threads);
-    	sprintf(o(), "\t\tNumber of threads proocessing the input.\n");
+  sprintf(o(), "\t-threads <integer> (default: %d)\n", threads);
+  sprintf(o(), "\t\tNumber of threads proocessing the input.\n");
 }
 
 /**
